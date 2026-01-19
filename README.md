@@ -1,27 +1,23 @@
-# GM1.0
-Green methanol multi-scale modelling workspace built on steady-state Aspen Plus flowsheets orchestrated in MATLAB. Includes TEA and LCA modules plus improved Gaussian-process symbolic-regression surrogates for CO2 and water electrolysers to enable fast system screening and optimisation.
-
 # Supplementary Code and Data Repository
 
 This repository provides supplementary code, models, and datasets supporting the manuscript:
 
 **Comparative Assessment of Advanced Carbon-Neutral Methanol Production Pathways through Multi-scale Techno-Economic-Environmental Modelling**
 
-It is intended to improve transparency, reproducibility, and reusability of the modelling workflow used to compare advanced carbon-neutral methanol production routes under consistent techno-economic and environmental assumptions.
+It is intended to improve transparency, reproducibility, and reusability of the modelling workflow used to compare carbon-neutral methanol production routes under consistent techno-economic and energy assumptions.
 
 ---
 
 ## 1. Scope and Content
 
-The repository implements a **steady-state, multi-scale modelling workflow** for green (carbon-neutral) methanol production, integrating:
+The repository implements a **steady-state, multi-scale modelling workflow** for green methanol production, integrating:
 
-- **Process-level steady-state simulation** in **Aspen Plus** to resolve mass and energy balances, equipment duties, and stream properties across each pathway.
+- **Process-level steady-state simulation** in **Aspen Plus** to resolve mass and energy balances, equipment duties, and stream properties across the system.
 - **MATLAB orchestration** for case management, parameter sweeps, data handling, and post-processing.
 - **Techno-Economic Analysis (TEA)** to quantify cost drivers and report comparable economic metrics across pathways.
-- **Life-Cycle Assessment (LCA)** to quantify greenhouse gas emissions and other impact indicators under consistent functional units and system boundaries.
-- **Surrogate modelling** using **Gaussian-process-based symbolic regression** to provide data-efficient, physically credible reduced-order models for:
-  - **CO2 electrolyser** performance (e.g., Faradaic efficiency, cell voltage, specific electricity use, product rates).
-  - **Water electrolyser** performance (e.g., power consumption, hydrogen production, efficiency metrics).
+- **Energy analysis** to quantify system electricity and utility requirements under consistent boundaries and operating assumptions.
+- **Data-driven surrogate modelling** based on an updated symbolic regression workflow:
+  - **GMGPTIPS2F**, an updated evolution of the MATLAB toolbox originally developed by **Dr. Dominic Searson (GPTIPS2F)**.
 
 These surrogates reduce the computational burden of repeated simulation and enable rapid sensitivity analysis and scenario screening.
 
@@ -39,24 +35,20 @@ These surrogates reduce the computational burden of repeated simulation and enab
   - MATLAB scripts for:
     - Running parametric studies and exporting results.
     - Parsing Aspen outputs and assembling performance datasets.
-    - Computing system-level KPIs for TEA and LCA reporting.
+    - Computing system-level KPIs for TEA and energy reporting.
     - Generating plots and tables used in the manuscript and supporting information.
 
 - `surrogates/`
   - Training datasets, model definitions, and evaluation scripts for surrogate models.
-  - Gaussian-process symbolic regression workflows for CO2 and water electrolysers.
+  - Symbolic regression workflows using GMGPTIPS2F for CO2 and water electrolysers.
 
 - `tea/`
   - Cost models, assumptions, and calculation scripts.
   - CAPEX/OPEX breakdown templates and economic parameter files.
 
-- `lca/`
-  - Inventory assumptions, emission factor datasets, and LCA calculation scripts.
-  - Electricity carbon intensity scenarios and impact calculation routines.
-
 - `data/`
-  - Input datasets (operating conditions, electricity prices, carbon intensity, scenario parameters).
-  - Exported model outputs (as CSV) used for analysis, figures, and surrogate training.
+  - Input datasets (operating conditions, scenario parameters).
+  - Exported model outputs (as CSV) used for analysis and surrogate training.
 
 - `figures/`
   - Figure generation scripts and exported images (optional; may be generated locally).
@@ -68,23 +60,23 @@ These surrogates reduce the computational burden of repeated simulation and enab
 
 ## 3. Modelling Overview
 
-### 3.1 Process Simulation (Aspen Plus)
-Aspen Plus flowsheets implement steady-state representations of each pathway. Key outputs include:
+### 3.1 Baseline Framework and Adaptation
+This data-driven model for green methanol was developed by adapting and modestly modifying a baseline modelling framework to suit the present case study. Two tasks were completed:
+
+1. **Electrolyser surrogate modelling:** surrogate models were constructed for the carbon dioxide electrolyser and the water electrolyser to quantify relationships between operating variables and observed responses.
+2. **System-scale assessment:** at the overall system scale, **techno-economic and energy analyses** were performed for the methanol production system.
+
+### 3.2 Process Simulation (Aspen Plus)
+Aspen Plus flowsheets implement steady-state representations of the methanol production system. Key outputs include:
 - Stream compositions, flowrates, temperatures, and pressures.
 - Unit operation duties and power requirements (e.g., compressors, pumps, heaters/coolers).
 - Conversion, selectivity, purge losses, recycle ratios, and separation performance.
-- Utility consumption to support TEA and LCA calculations.
+- Utility and electricity consumption to support TEA and energy calculations.
 
-### 3.2 Unit-Level Surrogate Models
-Electrolyser units are represented using GP-based symbolic regression surrogates to capture non-linear performance with limited training data while preserving physical credibility. Typical inputs and outputs include:
-- Inputs: current density, temperature, pressure, feed composition, single-pass conversion targets, and operational constraints (as applicable).
+### 3.3 Unit-Level Surrogate Models (GMGPTIPS2F)
+Electrolyser units are represented using symbolic-regression surrogates built with **GMGPTIPS2F**, which is the updated evolution of the MATLAB toolbox originally developed by **Dr. Dominic Searson (GPTIPS2F)**. Typical inputs and outputs include:
+- Inputs: current density, temperature, pressure, feed composition, and operating constraints (as applicable).
 - Outputs: Faradaic efficiency, cell voltage, specific electricity consumption, production rates, and auxiliary power (if modelled).
-
-### 3.3 Techno-Economic and Environmental Assessment
-The workflow reports pathway-comparable indicators, such as:
-- Levelised methanol cost and cost breakdown contributions.
-- Electricity and utility requirements per functional unit.
-- Life-cycle greenhouse gas emissions (e.g., kg CO2-eq per kg MeOH) under consistent boundaries and electricity carbon intensity assumptions.
 
 ---
 
@@ -93,11 +85,10 @@ The workflow reports pathway-comparable indicators, such as:
 ### 4.1 Software
 - Aspen Plus (version used in the study should be documented in `aspen/README.md` if available).
 - MATLAB (R2020a or later recommended; earlier versions may work depending on toolboxes).
-- Optional: Python (only if included scripts require it; otherwise MATLAB-only).
 
 ### 4.2 Typical MATLAB Toolboxes (if used)
-- Statistics and Machine Learning Toolbox (for GP-related workflows, if applicable).
-- Optimisation Toolbox (for screening/optimisation utilities, if applicable).
+- Statistics and Machine Learning Toolbox (if required by specific scripts).
+- Optimisation Toolbox (if required by screening/optimisation utilities).
 
 ---
 
@@ -113,26 +104,25 @@ The workflow reports pathway-comparable indicators, such as:
    - Execute parameter sweeps / scenario runs.
    - Export results to `data/outputs/` as CSV.
 
-3. **Train / evaluate surrogate models (optional)**
+3. **Train / evaluate surrogate models**
    - Use datasets in `data/` or `surrogates/data/`.
-   - Train GP symbolic regression models for electrolysers.
+   - Train GMGPTIPS2F symbolic regression models for the CO2 and water electrolysers.
    - Validate against withheld test sets and export fitted models.
 
-4. **Compute TEA and LCA indicators**
-   - Run scripts in `tea/` and `lca/` using exported process results.
+4. **Compute TEA and energy indicators**
+   - Run scripts in `tea/` (and any energy modules under `matlab/`).
    - Generate manuscript-ready tables and figures.
 
 ---
 
 ## 6. Reproducibility Notes
 
-- The results depend on:
-  - Electricity price and carbon intensity assumptions.
-  - Electrolyser performance maps and operating constraints.
-  - Cost year, discount rate, plant capacity, and economic assumptions.
-  - System boundary and inventory datasets in the LCA module.
+The reported results depend on:
+- Electrolyser performance maps, surrogate training data, and operating constraints.
+- Electricity price assumptions and any energy boundary definitions.
+- Cost year, discount rate, plant capacity, and economic assumptions.
 
-Where possible, all assumptions are parameterised and stored in plain-text or spreadsheet formats under `data/`, `tea/`, and `lca/`.
+Where possible, assumptions are parameterised and stored in plain-text or spreadsheet formats under `data/` and `tea/`.
 
 ---
 
